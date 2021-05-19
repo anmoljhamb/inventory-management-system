@@ -16,7 +16,25 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "Categories"
     def __str__(self):
-        return f'{self.name} by group {self.group_name}'
+        return f'{self.name}'
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=100, null=True)
+    group_name = models.ForeignKey(GroupName, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(null=True)
+    price_per_unit = models.PositiveIntegerField(null=True)
+    total_sale = models.PositiveIntegerField(default=0)
+
+
+    def __init__(self, *args, **kwargs):
+        super(Product, self).__init__(*args, **kwargs)
+
+
+    def __str__(self):
+        return f'{self.name} of category {self.category.name}'
+
 
 '''
 User Models

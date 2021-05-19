@@ -10,6 +10,8 @@ urlpatterns = [
     path('staff_delete/<int:pk>', views.staff_delete, name="staff-delete"),
     #Product
     path('product/', views.product_index, name="product-index"),
+    path('product_edit/<int:pk>', views.product_edit, name="product-edit"),
+    path('product/delete/<int:pk>', views.product_delete, name="product-delete"),
     path('order/', views.order_index, name="order-index"),
     path('order_request/', views.order_request_index, name="order_request-index"),
     #Category

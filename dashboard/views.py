@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from functools import wraps
-from .models import GroupName, User, Category
-from .forms import CreateUserForm, GroupNameForm, CategoryForm
+from .models import GroupName, User, Category, Product
+from .forms import CreateUserForm, GroupNameForm, CategoryForm, ProductForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -19,6 +19,7 @@ def execute_stuff(function):
 
         context['num_of_cat'] = context['user'].group_name.category_set.count()
         context['num_of_staff'] = context['user'].group_name.user_set.count()
+        context['num_of_products'] = context['user'].group_name.product_set.count()
 
         return function(request, context, *args, **kwargs)
     return wrapper
@@ -217,7 +218,58 @@ def staff_delete(request, context, pk):
 @login_required
 @execute_stuff
 def product_index(request, context):
+
+    if request.method == "POST":
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.group_name = context['user'].group_name
+            instance.save()
+            return redirect('product-index')
+    else:
+        form = ProductForm()
+    
+    context['form'] = form
+    context['button_value'] = "Add Product"
+    context['products'] = context['user'].group_name.product_set.all()
+
     return render(request, "dashboard/product_index.html", context)
+
+@login_required
+@execute_stuff
+def product_edit(request, context, pk):
+    cat = Product.objects.get(id=pk)
+
+    if request.method == "POST":
+        form = ProductForm(request.POST, instance=cat)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "product was successfully changed.")
+            return redirect("product-index")
+
+    form = ProductForm(instance=cat)
+
+    context = {
+        'form': form,
+        'button_value': "Change",   
+        **context
+    }
+
+    return render(request, "dashboard/product_edit.html", context)
+
+
+@login_required
+@execute_stuff
+def product_delete(request, context, pk):
+    cat = Product.objects.get(id=pk)
+
+    if request.method == "POST":
+        cat.delete()
+        messages.success(request, "product was deleted.")
+        return redirect('product-index')
+
+    return render(request, "dashboard/category_delete.html", context)
+
 
 @login_required
 @execute_stuff
