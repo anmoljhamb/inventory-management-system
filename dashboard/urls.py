@@ -12,8 +12,13 @@ urlpatterns = [
     path('product/', views.product_index, name="product-index"),
     path('product_edit/<int:pk>', views.product_edit, name="product-edit"),
     path('product/delete/<int:pk>', views.product_delete, name="product-delete"),
+    #Order
     path('order/', views.order_index, name="order-index"),
+    path('order/delete/<int:pk>', views.order_delete, name="order-delete"),
+    #OrderRequest
     path('order_request/', views.order_request_index, name="order_request-index"),
+    path('order_request/edit/<int:pk>', views.order_request_edit, name="order_request-edit"),
+    path('order_request/delete/<int:pk>', views.order_request_delete, name="order_request-delete"),
     #Category
     path('category/', views.category_index, name="category-index"),
     path('category/edit/<int:pk>', views.category_edit, name="category-edit"),

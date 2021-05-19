@@ -3,6 +3,13 @@ from django.contrib.auth.models import User as AbstractUser
 from django.contrib.auth.models import Group
 
 
+ORDER_CHOCIES = (
+    ('APPROVED', 'APPROVED'),
+    ('DENIED', 'DENIED'),
+    ('PENDING', 'PENDING'),
+)
+
+
 class GroupName(models.Model):
     group_name = models.CharField(max_length=100, unique=True, error_messages={'unique': "Error while creating the account. A shop with that name already exists."})
     class Meta:
@@ -33,7 +40,8 @@ class Product(models.Model):
 
 
     def __str__(self):
-        return f'{self.name} of category {self.category.name}'
+        return f'{self.name}({self.quantity}) Rs {self.price_per_unit}/unit'
+
 
 
 '''
@@ -56,3 +64,31 @@ class User(AbstractUser):
 '''
 End User Models
 '''
+class OrderRequest(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    staff = models.ForeignKey(User, models.CASCADE, null=True)
+    order_quantity = models.PositiveIntegerField(null=True)
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=100, choices=ORDER_CHOCIES, default="Pending")
+    group_name = models.ForeignKey(GroupName, on_delete=models.CASCADE, null=True)
+    total_amount = models.PositiveIntegerField(default=0)
+
+    def __init__(self, *args, **kwargs):
+        super(OrderRequest, self).__init__(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.order_quantity} {self.product} ordered by {self.staff}'
+
+class Order(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    staff = models.ForeignKey(User, models.CASCADE, null=True)
+    order_quantity = models.PositiveIntegerField(null=True)
+    date = models.DateTimeField(auto_now_add=True)
+    group_name = models.ForeignKey(GroupName, on_delete=models.CASCADE, null=True)
+    total_amount = models.PositiveIntegerField(default=0)
+
+    def __init__(self, *args, **kwargs):
+        super(Order, self).__init__(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.order_quantity} {self.product} ordered by {self.staff}'

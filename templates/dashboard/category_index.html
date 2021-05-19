@@ -9,7 +9,11 @@
 
   <div class="row">
     <div class="col-md-4">
+      {% if user.user_type == "User" %}
+      <p></p>
+      {% else %}
       {% include "partial/sample_form.html" %}
+      {% endif %}
     </div>
     <div class="col-md-8">
       <div class="row-md-4">
@@ -22,7 +26,11 @@
           <tr>
             <th>#</th>
             <th>Name</th>
+            {% if user.user_type == "User" %}
+            <p></p>
+            {% else %}
             <th>Action</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -30,11 +38,15 @@
           <tr>
             <td>{{ forloop.counter }}</td>
             <td>{{ category.name }}</td>
+            {% if user.user_type == "User" %}
+            <td></td>
+            {% else %}
             <td>
               <a href="{% url 'category-edit' category.id%}">Edit</a>
               <br>
               <a href="{% url 'category-delete' category.id%}" style="color: red;">Delete</a>
             </td>
+            {% endif %}
           </tr>
           {% endfor %}
         </tbody>

@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from functools import wraps
-from .models import GroupName, User, Category, Product
-from .forms import CreateUserForm, GroupNameForm, CategoryForm, ProductForm
+from .models import GroupName, User, Category, Product, OrderRequest, Order
+from .forms import CreateUserForm, GroupNameForm, CategoryForm, ProductForm, OrderRequestForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -20,6 +20,23 @@ def execute_stuff(function):
         context['num_of_cat'] = context['user'].group_name.category_set.count()
         context['num_of_staff'] = context['user'].group_name.user_set.count()
         context['num_of_products'] = context['user'].group_name.product_set.count()
+        context['num_of_order_request'] = context['user'].group_name.orderrequest_set.count()
+        context['num_of_orders'] = context['user'].group_name.order_set.count()
+        
+        total_sale = 0
+        for order in context['user'].group_name.order_set.all():
+            total_sale += order.total_amount
+        context['total_sale'] = total_sale
+
+        return function(request, context, *args, **kwargs)
+    return wrapper
+
+def only_admin(function):
+    @wraps(function)
+    def wrapper(request, context, *args, **kwargs):
+
+        if context['user'].user_type == "User":
+            return HttpResponse("You are not authorized to access this content")
 
         return function(request, context, *args, **kwargs)
     return wrapper
@@ -95,6 +112,32 @@ def home(request):
 @login_required
 @execute_stuff
 def dashboard_index(request, context):
+
+    orders = context['user'].group_name.order_set.all()
+    products = {}
+    for order in orders:
+        if order.product.name in products:
+            products[order.product.name] += order.total_amount
+        else:
+            products[order.product.name] = order.total_amount
+            
+    top_products = {k: v for k, v in sorted(products.items(), key=lambda item: item[1], reverse=True)}
+
+    context['top_products'] = list(top_products.items())[:6]
+
+    orders = context['user'].group_name.product_set.all()
+    products = {}
+    for order in orders:
+        if order.name in products:
+            products[order.name] += order.quantity
+        else:
+            products[order.name] = order.quantity
+            
+    top_products = {k: v for k, v in sorted(products.items(), key=lambda item: item[1], reverse=True)}
+
+    context['top_stock'] = list(top_products.items())[:6]
+
+
     return render(request, "dashboard/dashboard_index.html", context)
 
 @login_required
@@ -125,6 +168,7 @@ def category_index(request, context):
 
 @login_required
 @execute_stuff
+@only_admin
 def category_edit(request, context, pk):
     cat = Category.objects.get(id=pk)
 
@@ -147,6 +191,7 @@ def category_edit(request, context, pk):
 
 @login_required
 @execute_stuff
+@only_admin
 def category_delete(request, context, pk):
     cat = Category.objects.get(id=pk)
 
@@ -185,6 +230,7 @@ def staff_index(request, context):
 
 @login_required
 @execute_stuff
+@only_admin
 def staff_edit(request, context, pk):
 
     temp_user = User.objects.get(id=pk)
@@ -205,6 +251,7 @@ def staff_edit(request, context, pk):
 
 @login_required
 @execute_stuff
+@only_admin
 def staff_delete(request, context, pk):
     item = User.objects.get(id=pk)
 
@@ -237,6 +284,7 @@ def product_index(request, context):
 
 @login_required
 @execute_stuff
+@only_admin
 def product_edit(request, context, pk):
     cat = Product.objects.get(id=pk)
 
@@ -260,6 +308,7 @@ def product_edit(request, context, pk):
 
 @login_required
 @execute_stuff
+@only_admin
 def product_delete(request, context, pk):
     cat = Product.objects.get(id=pk)
 
@@ -274,9 +323,109 @@ def product_delete(request, context, pk):
 @login_required
 @execute_stuff
 def order_index(request, context):
+
+    context['orders'] = context['user'].group_name.order_set.all()
+
     return render(request, "dashboard/order_index.html", context)
 
 @login_required
 @execute_stuff
+@only_admin
+def order_delete(request, context, pk):
+    cat = Order.objects.get(id=pk)
+
+    if request.method == "POST":
+        cat.delete()
+        messages.success(request, "Order was deleted.")
+        return redirect('order-index')
+
+    return render(request, "dashboard/category_delete.html", context)
+
+@login_required
+@execute_stuff
 def order_request_index(request, context):
+
+    if request.method == "POST":
+        form = OrderRequestForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            instance.staff = context['user']
+            instance.group_name = context['user'].group_name
+            instance.total_amount = instance.order_quantity*instance.product.price_per_unit
+            instance.save()
+            return redirect('order_request-index')
+    else:
+        form = OrderRequestForm()
+
+    if context['user'].user_type == "User":
+        # form.fields['staff'].choices = [(context['user'], context['user'])]
+        pass
+    else:
+        form.fields['staff'].queryset = context['user'].group_name.user_set.all()
+    form.fields['product'].queryset = context['user'].group_name.product_set.all()
+    form.fields['status'].choices = [("PENDING", "PENDING")]
+
+    context['form'] = form
+    context['button_value'] = "Add Order Request"
+    context['order_requests'] = context['user'].group_name.orderrequest_set.all()
+
     return render(request, "dashboard/order_request_index.html", context)
+
+
+@login_required
+@execute_stuff
+@only_admin
+def order_request_edit(request, context, pk):
+    cat = OrderRequest.objects.get(id=pk)
+
+    if request.method == "POST":
+        form = OrderRequestForm(request.POST, instance=cat)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            status = form.cleaned_data.get("status")
+
+            if status == "APPROVED":
+                if instance.product.quantity > instance.order_quantity:
+                    Order.objects.create(
+                        product = instance.product,
+                        staff = instance.staff,
+                        order_quantity = instance.order_quantity,
+                        group_name = instance.group_name,
+                        total_amount = instance.total_amount
+                    )
+                    pf = ProductForm(instance=instance.product)
+                    pf = pf.save(commit=False)
+                    pf.quantity -= instance.order_quantity
+                    pf.save()
+                    OrderRequest.objects.get(id=instance.id).delete()
+                    messages.success(request, "Order Request was approved.")
+                else:
+                    messages.success(request, "Order Request couldn't be approved due to less stock.")
+            elif status == "DENNIED":
+                OderRequest.objects.get(instance=instance).delete()
+                messages.success(request, "Order Request was denied.")
+                
+            return redirect("order_request-index")
+
+    form = OrderRequestForm(instance=cat)
+
+    context = {
+        'form': form,
+        'button_value': "Change",   
+        **context
+    }
+
+    return render(request, "dashboard/order_request_edit.html", context)
+
+@login_required
+@execute_stuff
+@only_admin
+def order_request_delete(request, context, pk):
+    cat = OrderRequest.objects.get(id=pk)
+
+    if request.method == "POST":
+        cat.delete()
+        messages.success(request, "Order Request was deleted.")
+        return redirect('order_request-index')
+
+    return render(request, "dashboard/category_delete.html", context)

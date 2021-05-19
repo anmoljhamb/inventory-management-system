@@ -8,7 +8,11 @@
 
   <div class="row">
     <div class="col-md-5">
+      {% if user.user_type == "User" %}
+      <p></p>
+      {% else %}
       {% include "partial/sample_form.html" %}
+      {% endif %}
     </div>
     <div class="col-md-7">
       <div class="row-md-4">
@@ -25,7 +29,11 @@
             <th>Email</th>
             <th>Phone</th>
             <th>User Type</th>
+            {% if user.user_type == "User" %}
+            <th></th>
+            {% else %}
             <th>Action</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -37,11 +45,15 @@
             <td>{{temp_user.email}}</td>
             <td>{{temp_user.phone}}</td>
             <td>{{temp_user.user_type}}</td>
+            {% if user.user_type == "User" %}
+            <td></td>
+            {% else %}
             <td>
               <a href="{% url 'staff-edit' temp_user.id%}">Edit</a>
               <br>
               <a href="{% url 'staff-delete' temp_user.id%}" style="color: red;">Delete</a>
             </td>
+            {% endif %}
           </tr>
           {% endfor %}
         </tbody>

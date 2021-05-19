@@ -2,11 +2,20 @@
     <div class="container-fluid">
         <div class="row">
             <a href="{% url 'order_request-index' %}" style="text-decorations:none; color:inherit;"">
+                <div class="col-md-3">
+                    <div class="box bg-primary">
+                        <i class="fa fa-eye"></i>
+                        <h3>{{num_of_order_request}}</h3>
+                        <p class="lead">Order Requests</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{% url 'order-index' %}" style="text-decorations:none; color:inherit;"">
             <div class="col-md-3">
-                <div class="box bg-primary">
-                    <i class="fa fa-eye"></i>
-                    <h3>5,154</h3>
-                    <p class="lead">Pending Order Requests</p>
+                <div class="box success">
+                    <i class="fa fa-handshake-o"></i>
+                    <h3>{{num_of_orders}}</h3>
+                    <p class="lead">Orders</p>
                 </div>
             </div>
             </a>
@@ -28,15 +37,6 @@
                 </div>
             </div>
             </a>
-            <a href="{% url 'order-index' %}" style="text-decorations:none; color:inherit;"">
-            <div class="col-md-3">
-                <div class="box success">
-                    <i class="fa fa-handshake-o"></i>
-                    <h3>5,154</h3>
-                    <p class="lead">Orders</p>
-                </div>
-            </div>
-            </a>
         </div>
     </div>
 </section>
@@ -52,6 +52,15 @@
                 </div>
             </div>
             </a>  
+            <a href="{% url 'dashboard-index' %}" style="text-decorations:none; color:inherit;"">
+                <div class="col-md-3">
+                    <div class="box bg-primary">
+                        <i class="fa fa-eye"></i>
+                        <h3>Rs {{total_sale}}</h3>
+                        <p class="lead">Total Sale</p>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
 </section>

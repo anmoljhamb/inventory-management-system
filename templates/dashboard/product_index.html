@@ -9,7 +9,11 @@
 
   <div class="row">
     <div class="col-md-4">
+      {% if user.user_type == "User" %}
+      <p></p>
+      {% else %}
       {% include "partial/sample_form.html" %}
+      {% endif %}
     </div>
     <div class="col-md-8">
       <div class="row-md-4">
@@ -25,8 +29,11 @@
             <th>Category</th>
             <th>Quantity</th>
             <th>Price Per Unit</th>
-            <th>Total Sales</th>
+            {% if user.user_type == "User" %}
+            <th></th>
+            {% else %}
             <th>Action</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -37,12 +44,15 @@
             <td>{{ product.category.name }}</td>
             <td>{{ product.quantity }}</td>
             <td>{{ product.price_per_unit }}</td>
-            <td>{{ product.total_sale }}</td>
+            {% if user.user_type == "User" %}
+            <td></td>
+            {% else %}
             <td>
               <a href="{% url 'product-edit' product.id%} ">Edit</a>
               <br>
               <a href="{% url 'product-delete' product.id %}" style="color: red;">Delete</a>
             </td>
+            {% endif %}
           </tr>
           {% endfor %}Name
         </tbody>
