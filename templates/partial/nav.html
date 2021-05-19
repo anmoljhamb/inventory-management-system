@@ -10,10 +10,10 @@
         <div class="navbar-right">
             <ul class="nav navbar-nav">
                 <li class">
-                    <a href="#">User | Profile</a>
+                    <a href="#">{{user.user_type}} | Profile</a>
                 </li>
                 <li class">
-                    <a href="#">Logout</a>
+                    <a href="{% url 'user-logout' %}">Logout</a>
                 </li>
             </ul>
     </div>
