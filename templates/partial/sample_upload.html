@@ -8,10 +8,7 @@
         background: #1f2739 !important;
     }
 
-    select{
-        color: black;
-        width: 100%;
-    }
+    select,
     option {
         color: black;
     }
@@ -90,20 +87,14 @@
                 {% endfor %}
             </div>
             <div class="">
-                <h3>
-                    {{h3}}
-                </h3>
-                <h4>
-                    {{h4}}
-                </h4>
-                <form method="POST" action="" width="parent">
+                <form method="post" enctype="multipart/form-data" action="{% url action_url %}">
                     {% csrf_token %}
-                    {{form | crispy }}
-                    <br>
-                    <input type="submit" value="{{button_value}}" class="btn btn-primary">
+                    <input type="file" name="myfile">
+                    <button type="submit" class="btn btn-primary">Import CSV</button>
                 </form>
             </div>
         </div>
     </div>
     <div class="col-md-3"></div>
 </div>
+

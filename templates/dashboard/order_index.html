@@ -8,10 +8,15 @@
 <div class="container">
 
   <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-11">
       <div class="row-md-4">
         <input type="submit" value="Download as CSV" onclick="download_table_as_csv('products');"
           style="color: white; background-color: #262f44; border-radius: 6px;" class="btn">
+        {% if user.user_type == "User" %}
+        <p></p>
+        {% else %}
+        {% include "partial/sample_upload.html" %}
+        {% endif %}
       </div>
       <h2>Order Table</h2>
       <table class="products container dt-responsive" id="products">
@@ -20,7 +25,7 @@
             <th>#</th>
             <th>Product Name</th>
             <th>Product Category</th>
-            <th>Quantity</th>
+            <th>Order Quantity</th>
             <th>Price Per unit</th>
             <th>Date And Time</th>
             <th>Amount</th>

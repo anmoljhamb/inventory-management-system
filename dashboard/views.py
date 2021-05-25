@@ -6,7 +6,8 @@ from .forms import CreateUserForm, GroupNameForm, CategoryForm, ProductForm, Ord
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-
+from django.core.files.storage import FileSystemStorage
+import csv, io
 
 
 def execute_stuff(function):
@@ -161,10 +162,35 @@ def category_index(request, context):
         'user_categories': user_categories,
         'form': form,
         'button_value': "Create Category",
+        'action_url': 'category_import',
         **context
     }
 
     return render(request, "dashboard/category_index.html", context)
+
+@login_required
+@execute_stuff
+def category_import(request, context):
+    if request.method == "POST":
+        try:
+            myfile = request.FILES.get("myfile")
+            paramFile = io.TextIOWrapper(myfile)
+            temp = csv.DictReader(paramFile)
+            list_of_dict = list(temp)
+            for row in list_of_dict:
+                Category.objects.get_or_create(
+                    name = row["name"],
+                    group_name = context['user'].group_name
+                )
+            messages.info(request, "All the categories were imported successfully.")
+        except Exception as E:
+            print(E )
+            messages.info(request, """
+            The provided file is invalid. Make sure there is only 1 column, being "name", and all the 
+            values must be included in double quotes.
+            """)
+
+    return redirect("category-index")
 
 @login_required
 @execute_stuff
@@ -201,6 +227,7 @@ def category_delete(request, context, pk):
         return redirect('category-index')
 
     return render(request, "dashboard/category_delete.html", context)
+
 
 @login_required
 @execute_stuff
@@ -279,6 +306,7 @@ def product_index(request, context):
     context['form'] = form
     context['button_value'] = "Add Product"
     context['products'] = context['user'].group_name.product_set.all()
+    context['action_url'] = "product_import"
 
     return render(request, "dashboard/product_index.html", context)
 
@@ -322,11 +350,72 @@ def product_delete(request, context, pk):
 
 @login_required
 @execute_stuff
+def product_import(request, context):
+    if request.method == "POST":
+        try:
+            myfile = request.FILES.get("myfile")
+            paramFile = io.TextIOWrapper(myfile)
+            temp = csv.DictReader(paramFile)
+            list_of_dict = list(temp)
+            for row in list_of_dict:
+                Product.objects.get_or_create(
+                    name = row["Name"],
+                    category = Category.objects.get_or_create(name=row["Category"], group_name=context['user'].group_name)[0],
+                    quantity = row["Quantity"],
+                    price_per_unit = row["Price Per Unit"],
+                    group_name = context['user'].group_name
+                )
+            messages.info(request, "All the categories were imported successfully.")
+        except Exception as E:
+            print(E )
+            messages.info(request, """
+            The provided file is invalid. Make sure there are only 4 columns, being "Name", "Category", "Quantity", "Price Per Unit", and all the 
+            values must be included in double quotes. Make sure the spelling of each is right, and that numbers shouldn't be in quotes and Category is one of the categories
+            that have already been created, if it doesn't match, a new category will be created.
+            """)
+
+    return redirect("product-index")
+
+
+@login_required
+@execute_stuff
 def order_index(request, context):
 
     context['orders'] = context['user'].group_name.order_set.all()
+    context['action_url'] = "order_import"
 
     return render(request, "dashboard/order_index.html", context)
+
+@login_required
+@execute_stuff
+def order_import(request, context):
+    if request.method == "POST":
+        try:
+            myfile = request.FILES.get("myfile")
+            paramFile = io.TextIOWrapper(myfile)
+            temp = csv.DictReader(paramFile)
+            list_of_dict = list(temp)
+            for row in list_of_dict:
+                temp_product = Product.objects.get(name=row["Name"])
+                print(row)
+                Order.objects.create(
+                    product = temp_product,
+                    staff = context['user'],
+                    order_quantity = row["Quantity"],
+                    group_name = context['user'].group_name,
+                    total_amount = temp_product.price_per_unit*int(row["Quantity"])
+                )
+            messages.info(request, "All the categories were imported successfully.")
+        except Exception as E:
+            print(E)
+            messages.info(request, """
+            The provided file is invalid. Make sure there are only 2 columns, being "Product Name", "Order Quantity"and all the 
+            values must be included in double quotes. Make sure the spelling of each is right, and that numbers shouldn't be in quotes and Product Name is one of the Products
+            that have already been created.
+            """)
+
+    return redirect("order-index")
+
 
 @login_required
 @execute_stuff

@@ -18,7 +18,7 @@ class GroupName(models.Model):
         return self.group_name
 
 class Category(models.Model):
-    name = models.CharField(max_length=100, null=True)
+    name = models.CharField(max_length=100, null=True, unique=True, error_messages={'unique': "Category with duplicate name cannot exist."})
     group_name = models.ForeignKey(GroupName, on_delete=models.CASCADE)
     class Meta:
         verbose_name_plural = "Categories"
