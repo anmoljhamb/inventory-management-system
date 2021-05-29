@@ -24,6 +24,10 @@ def execute_stuff(function):
         context['num_of_order_request'] = context['user'].group_name.orderrequest_set.count()
         context['num_of_orders'] = context['user'].group_name.order_set.count()
         
+        if context['user'].user_type == "Web Admin":
+            return redirect("/admin")
+
+
         total_sale = 0
         for order in context['user'].group_name.order_set.all():
             total_sale += order.total_amount
@@ -38,6 +42,8 @@ def only_admin(function):
 
         if context['user'].user_type == "User":
             return HttpResponse("You are not authorized to access this content")
+        
+
 
         return function(request, context, *args, **kwargs)
     return wrapper
