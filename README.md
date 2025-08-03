@@ -1,81 +1,105 @@
-# inventory-management-system
+# Inventory Management System
 
-Inventory Management System. 
-The System consist of two types of users, an abstract user, and a group admin. Now, every group admin, is a shop owner, which can make an account for his or her own shop, and he can add users from the dashboard. Each user can make an order request, which can only be approved by a group admin. The dashboard contains different pages, including Order, Order Requests, Product, Category, Staff, and home page. 
+The Inventory Management System consists of two types of users: an **abstract user** and a **group admin**.
 
-# Admin login
-The default superuser login for /admin is, 
-username: admin
-password: admin
-You can add your own superuser by the command, python manage.py createsuperuser
+* Each **group admin** is a shop owner who can create an account for their shop and add users from their dashboard.
+* Each **user** can make an order request, which can only be approved by a group admin.
+* The dashboard includes pages for **Orders**, **Order Requests**, **Products**, **Categories**, **Staff**, and a **Home page**.
 
-# Pages
-<ol>
-<li>
-    Home Page
-    <img src="screenshots/ss_1.png">
-    This Page contains the basic information, the statics charts.
-</li>
-<li>
-    Staff Page
-    This page contains all the information of the users and group admins of that particular shop.
-</li>
-<li>
-    Order and Order Requests Page
-    These pages would allow the group admin to delete and view the orders, and in case of order requests, deny or approve a request.
-</li>
-<li>
-    Product and Category Page
-    This Page contains all the information about the products and categories. A user can just view them, whereas, the group admin can do CRUD operations
-</li>
-</ol>
+---
 
-# Models used in the application.
+## Admin Login
 
-<ol>
-<li>
-    <b>Group Name</b>
-    This is the most important model out of all. This allows the app to separate the users, products, and all other models. This contains just a single CharField. This Model acts as a foreign key to the rest of the models, which allows us to establish many to one relationship, giving us easier access of the particular objects.
-</li>
-<li>
-    <b>User</b>
-    As the name states, this model is the user model, which allows the user to login into the application. This model overrides the django.contrib.auth.models.User in order to get more fields into a single model, in order to not have to create a separate Profile model
-</li>
-<li>
-    <b>Category</b>
-    Category Model contains a single CharField, "name", and a ForeignKey group_name, which allows us to differentiate categories created by separate shops.
-</li>
-<li>
-    <b>Product</b>
-    Product Model contains all the information about a product and a ForeignKey group_name, which allows us to differentiate products created by separate shops.
-</li>
-<li>
-    <b>Orderrequest and Order</b>
-    The only difference between OrderRequest model and the Order Model is the CharField status. When a OrderRequest's status is changed to approved, the rest of the model is created as Order, and the original one is deleted.
-</li>
-</ol>
+The default superuser credentials for `/admin` are:
 
-# Steps to run the website.
-<ul>
-Download the zip, and extract it to a folder. You can use the git clone command too.
-</ul>
-<ul>
-Install the requirements by running the command:
-pip install -r requirements.txt
-</ul>
-<ul>
-Run the server by the command
-python manage.py runserver
-</ul>
+* **Username**: `admin`
+* **Password**: `admin`
 
-# Todo
-<ol>
-<li>
-    Checkout if the website's security is good enough.
-</li>
-<li>
-    Add more charts with different stats.
-</li>
-</ol>
+You can also create your own superuser with:
 
-If you have any suggestions, feel free to drop an email at codingwithaj@gmail.com, or DM on instagram on @thetechgeek_
+```bash
+python manage.py createsuperuser
+```
+
+---
+
+## Pages
+
+1. **Home Page**
+   ![Home Page Screenshot](screenshots/ss_1.png)
+   Displays basic shop information and statistical charts.
+
+2. **Staff Page**
+   Displays all information about the users and group admins of a particular shop.
+
+3. **Order and Order Requests Pages**
+   Allows group admins to delete or view orders.
+   On the **Order Requests** page, group admins can approve or deny user order requests.
+
+4. **Product and Category Pages**
+
+   * Users can only view products and categories.
+   * Group admins can perform full CRUD operations.
+
+---
+
+## Models
+
+1. **GroupName**
+
+   * The key model that links all others together.
+   * Contains a single `CharField`.
+   * Acts as a foreign key for other models, enabling multi-shop support.
+
+2. **User**
+
+   * Extends `django.contrib.auth.models.User`.
+   * Contains additional fields to eliminate the need for a separate Profile model.
+
+3. **Category**
+
+   * Contains:
+
+     * `name`: `CharField`
+     * `group_name`: `ForeignKey` to `GroupName`, differentiating categories per shop.
+
+4. **Product**
+
+   * Stores all product-related information.
+   * Linked to a `GroupName` for multi-shop support.
+
+5. **OrderRequest** and **Order**
+
+   * Identical models except for the `status` field.
+   * When an `OrderRequest` is approved, it's converted to an `Order` and the original request is deleted.
+
+---
+
+## Running the Application
+
+1. **Clone or download** the project:
+
+   ```bash
+   git clone <repository_url>
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run the development server**:
+
+   ```bash
+   python manage.py runserver
+   ```
+
+---
+
+## TODO
+
+1. Review and improve website security.
+2. Add more statistical charts and insights.
+
+---
